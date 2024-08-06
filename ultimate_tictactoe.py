@@ -252,6 +252,20 @@ class ultimate_board(board):
 
         return self.display_board()
     
+class gameplay(object):
+    def __init__(self):
+        
+        player1 = player('player 1', '')
+        player2 = player('palyer 2', '')
+        if player1.getChip() == player2.getChip():
+            raise ValueError('players must choose different chips')
+        self.player1 = player1
+        self.player2 = player2
+
+        ultboard = ultimate_board()
+        self.ultboard = ultboard
+
+    pass
 
 if __name__ == "__main__":
     # player1 = player()
