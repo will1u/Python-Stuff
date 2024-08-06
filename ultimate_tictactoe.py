@@ -7,9 +7,11 @@ class player(object):
         '''
         
         while chip not in valid_chips:
+            print("---------------------------------")
             print("chip must be a valid chip")
             print("valid chips: ", valid_chips)
-            chip = input('What chip would you like (X or O)')
+            chip = input(f'{name} choose chip (X or O)')
+            print("---------------------------------")
         
         self.name = name
         self.chip = chip
@@ -270,7 +272,7 @@ def play():
 
     while not ultboard.checkGameWon(player1) or not ultboard.checkGameWon(player2):
         print('game started')
-
+        break
 
 
 
@@ -279,7 +281,6 @@ if __name__ == "__main__":
     # player1 = player()
     # player1.updateWinState()
     # print(player1.getWinState())
-    player1 = player('X')
 
     # board1 = board()
     # board1.placeChip(player1, 1)
@@ -304,3 +305,4 @@ if __name__ == "__main__":
     # print(ult.checkGameWon(player1))
     # this is a test line!
     # this is another test line i made
+    play()
