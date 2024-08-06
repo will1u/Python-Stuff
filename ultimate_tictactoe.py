@@ -201,16 +201,7 @@ class ultimate_board(board):
         for i in board_lst:
             combined_board_lst.extend(i)
         final_result = [[], [], [], [], [], [], [], [], []]
-        # current problem: it's basically taking board_list and turning rows to columns,
-        # whereas it needs to kind of put them into clusters of three instead       
-        
-        # for i in range(len(board_lst[0])):
-        #     for k in range(len(board_lst)):
-        #         final_result[i%9].append(board_lst[k][i])
-        
-        # for i in range(len(combined_board_lst)): # len = 27
-        #     final_result_indx = i // 3
-        #     final_result[final_result_indx].append(combined_board_lst[i])
+
         row = 0
         for i in range(len(board_lst)): #len = 3
             final_result[3*row].extend(board_lst[i][0::3])
