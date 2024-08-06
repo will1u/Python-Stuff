@@ -1,3 +1,6 @@
+import tkinter as tk
+from tkinter import messagebox
+
 class player(object):
     def __init__(self, name, chip = '', win_state = False, valid_chips = ['X', 'O']):
         '''
@@ -350,6 +353,7 @@ def play():
             print(player2.getWinState())
             print('player 2 won, exiting loop')
             break
+
 
 if __name__ == "__main__":
     play()
