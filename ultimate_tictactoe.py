@@ -271,8 +271,7 @@ def play():
     
     if player1.getChip() == player2.getChip():
         raise ValueError('players must choose different chips')
-    
-    player_list = [player1, player2]
+
     ultboard = ultimate_board()
     
     prevChosen = False # indicates whether there is a restriction to which board you can play in
@@ -333,19 +332,6 @@ def play():
         print(f"player 2 turn ({player2.getChip()})")
         print("---------------------------------")
         
-        # while not validSuperSpace2:
-        #     try:
-        #         player2superchoice = int(input('choose super board space: '))
-        #         subboard = ultboard.selectSubBoard(player2superchoice)
-        #         assert subboard.checkGameWon(player1)[0] == False
-        #         validSuperSpace2 = True
-        #     except ValueError:
-        #         print('invalid board space selected, try again')
-        #     except AssertionError:
-        #         print('must select board that has not been won, try again')
-        #     else:
-        #         break
-
         print("current superboard: ", nextSuperBoard)
         subboard = ultboard.selectSubBoard(nextSuperBoard)
         print(subboard)
@@ -375,31 +361,4 @@ def play():
             break
 
 if __name__ == "__main__":
-    # player1 = player()
-    # player1.updateWinState()
-    # print(player1.getWinState())
-
-    # board1 = board()
-    # board1.placeChip(player1, 1)
-    # board1.placeChip(player1, 5)
-    # board1.placeChip(player1, 9)
-    # print(board1)
-    # print(board1.checkGameWon(player1))
-
-    # ult = ultimate_board()
-    # ult.placeChip(player1, 1, 1)
-    # ult.placeChip(player1, 1, 2)
-    # ult.placeChip(player1, 1, 3)
-    # ult.placeChip(player1, 5, 1)
-    # ult.placeChip(player1, 5, 5)
-    # ult.placeChip(player1, 5, 9)
-    # ult.placeChip(player1, 9, 2)
-    # ult.placeChip(player1, 9, 5)
-    # ult.placeChip(player1, 9, 8)
-    # print(ult)
-    # print(ult.getWonBoards(player1))
-    # print(ult.row1[0].boardChip(player1))
-    # print(ult.checkGameWon(player1))
-    # this is a test line!
-    # this is another test line i made
     play()
