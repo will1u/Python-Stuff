@@ -275,33 +275,40 @@ def play():
     player_list = [player1, player2]
     ultboard = ultimate_board()
     
+    prevChosen = False # indicates whether there is a restriction to which board you can play in
 
     while (not player1.getWinState()) or (not player2.getWinState()):
         #player 1 turn
         print("---------------------------------")
-        print("player 1 turn")
+        print(f"player 1 turn ({player1.getChip()})")
         print("---------------------------------")
         validSuperSpace1 = False
         
-        while not validSuperSpace1:
-            try:
-                player1superchoice = int(input('choose super board space: '))
-                subboard = ultboard.selectSubBoard(player1superchoice)
-                assert subboard.checkGameWon(player1)[0] == False
-                validSuperSpace1 = True
-            except ValueError:
-                print('invalid board space selected, try again')
-            except AssertionError:
-                print('must select board that has not been won, try again')
-            else:
-                break
-
-
+        if not prevChosen:
+            while not validSuperSpace1:
+                try:
+                    player1superchoice = int(input('choose super board space: '))
+                    subboard = ultboard.selectSubBoard(player1superchoice)
+                    assert subboard.checkGameWon(player1)[0] == False
+                    validSuperSpace1 = True
+                except ValueError:
+                    print('invalid board space selected, try again')
+                except AssertionError:
+                    print('must select board that has not been won, try again')
+                else:
+                    break
+            prevChosen = True
+        
+        else:
+            print("current superboard: ", nextSuperBoard)
+            subboard = ultboard.selectSubBoard(nextSuperBoard)
+            print(subboard)
+    
         validSubSpace1 = False
 
         while not validSubSpace1:
             try:
-                prompt_str = 'current sub board: ' + str(player1superchoice) + ' choose sub board space: '
+                prompt_str =  'choose sub board space: '
                 player1subchoice = int(input(prompt_str))
                 subboard.placeChip(player1, player1subchoice)
                 validSuperSpace1 = True
@@ -311,6 +318,8 @@ def play():
                 print('must select space that has not already been selected, try again')
             else:
                 break     
+        
+        nextSuperBoard = player1subchoice
 
         print(ultboard)
         if ultboard.checkGameWon(player1):
@@ -321,29 +330,31 @@ def play():
 
         #player 2 turn
         print("---------------------------------")
-        print("player 2 turn")
+        print(f"player 2 turn ({player2.getChip()})")
         print("---------------------------------")
-        validSuperSpace2 = False
         
-        while not validSuperSpace2:
-            try:
-                player2superchoice = int(input('choose super board space: '))
-                subboard = ultboard.selectSubBoard(player2superchoice)
-                assert subboard.checkGameWon(player1)[0] == False
-                validSuperSpace2 = True
-            except ValueError:
-                print('invalid board space selected, try again')
-            except AssertionError:
-                print('must select board that has not been won, try again')
-            else:
-                break
+        # while not validSuperSpace2:
+        #     try:
+        #         player2superchoice = int(input('choose super board space: '))
+        #         subboard = ultboard.selectSubBoard(player2superchoice)
+        #         assert subboard.checkGameWon(player1)[0] == False
+        #         validSuperSpace2 = True
+        #     except ValueError:
+        #         print('invalid board space selected, try again')
+        #     except AssertionError:
+        #         print('must select board that has not been won, try again')
+        #     else:
+        #         break
 
+        print("current superboard: ", nextSuperBoard)
+        subboard = ultboard.selectSubBoard(nextSuperBoard)
+        print(subboard)
 
         validSubSpace2 = False
 
         while not validSubSpace2:
             try:
-                prompt_str = 'current sub board: ' + str(player2superchoice) + ' choose sub board space: '
+                prompt_str = 'choose sub board space: '
                 player2subchoice = int(input(prompt_str))
                 subboard.placeChip(player2, player2subchoice)
                 validSuperSpace1 = True
@@ -354,12 +365,15 @@ def play():
             else:
                 break
         
+        nextSuperBoard = player2subchoice
+        
         print(ultboard)
-        if ultboard.checkGameWon(player1):
-            player1.updateWinState()
-            print(player1.getWinState())
-            print('player 1 won, exiting loop')
+        if ultboard.checkGameWon(player2):
+            player2.updateWinState()
+            print(player2.getWinState())
+            print('player 2 won, exiting loop')
             break
+
 if __name__ == "__main__":
     # player1 = player()
     # player1.updateWinState()
