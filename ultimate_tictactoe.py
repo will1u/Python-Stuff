@@ -252,20 +252,28 @@ class ultimate_board(board):
 
         return self.display_board()
     
-class gameplay(object):
-    def __init__(self):
-        
-        player1 = player('player 1', '')
-        player2 = player('palyer 2', '')
-        if player1.getChip() == player2.getChip():
-            raise ValueError('players must choose different chips')
-        self.player1 = player1
-        self.player2 = player2
 
-        ultboard = ultimate_board()
-        self.ultboard = ultboard
+def play():
+    
+    player1 = player('player 1', '')
+    player2 = player('player 2', '')
 
-    pass
+    
+    if player1.getChip() == player2.getChip():
+        raise ValueError('players must choose different chips')
+    
+    player_list = [player1, player2]
+    ultboard = ultimate_board()
+    
+    player1_turn = True
+    player2_turn = False
+
+    while not ultboard.checkGameWon(player1) or not ultboard.checkGameWon(player2):
+        print('game started')
+
+
+
+
 
 if __name__ == "__main__":
     # player1 = player()
@@ -280,19 +288,19 @@ if __name__ == "__main__":
     # print(board1)
     # print(board1.checkGameWon(player1))
 
-    ult = ultimate_board()
-    ult.placeChip(player1, 1, 1)
-    ult.placeChip(player1, 1, 2)
-    ult.placeChip(player1, 1, 3)
-    ult.placeChip(player1, 5, 1)
-    ult.placeChip(player1, 5, 5)
-    ult.placeChip(player1, 5, 9)
-    ult.placeChip(player1, 9, 2)
-    ult.placeChip(player1, 9, 5)
-    ult.placeChip(player1, 9, 8)
-    print(ult)
-    print(ult.getWonBoards(player1))
-    print(ult.row1[0].boardChip(player1))
-    print(ult.checkGameWon(player1))
+    # ult = ultimate_board()
+    # ult.placeChip(player1, 1, 1)
+    # ult.placeChip(player1, 1, 2)
+    # ult.placeChip(player1, 1, 3)
+    # ult.placeChip(player1, 5, 1)
+    # ult.placeChip(player1, 5, 5)
+    # ult.placeChip(player1, 5, 9)
+    # ult.placeChip(player1, 9, 2)
+    # ult.placeChip(player1, 9, 5)
+    # ult.placeChip(player1, 9, 8)
+    # print(ult)
+    # print(ult.getWonBoards(player1))
+    # print(ult.row1[0].boardChip(player1))
+    # print(ult.checkGameWon(player1))
     # this is a test line!
     # this is another test line i made
