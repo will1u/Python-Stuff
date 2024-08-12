@@ -290,15 +290,25 @@ class ultimate_board(board):
 
         return wonBoardsSet in winConditions
     
-    def isValidMove(self, move):
+    def isValidMove(self, move, prevMove):
         '''
         move is a tuple (super_space (int), sub_space (int))
+        prevMove is a tuple (super_space (int), sub_space (int))
+        assumes prevMove is a valid move
+
+        prevMove = None expresses that move is the first move in the game
         '''
+        #super_space checks
         if (move[0] not in range(1,10)) or (move[1] not in range(1, 10)):
             return False
+        elif prevMove == None:
+            return True
+        elif move[0] != prevMove[1]:
+            return False
         
+        #sub_space checks
         sub_board = self.selectSubBoard(move[0])
-        if sub_board in self.getWonBoardsGeneral() :
+        if sub_board in self.getWonBoardsGeneral():
             return False
         else:
             return sub_board.isValidMove(move[1])

@@ -133,27 +133,29 @@ if __name__ == "__main__":
         sub_space = i[1][1]
         testUltBoard.placeChip(chip, super_space, sub_space)
     
+
+    prevMove = testMoveHis[-1][1]
     print(testUltBoard)
     print("test 1: out of bounds super_space")
     move = (10, 1)
-    print("expected:", False, " actual:", testUltBoard.isValidMove(move), "\n")
+    print("expected:", False, " actual:", testUltBoard.isValidMove(move, prevMove), "\n")
     
     print("test 2: out of bounds sub_space")
     move = (2, 11)
-    print("expected:", False, " actual:", testUltBoard.isValidMove(move), "\n")
+    print("expected:", False, " actual:", testUltBoard.isValidMove(move, prevMove), "\n")
 
     print("test 3: out of bounds super_space and sub_space")
     move = (12, 13)
-    print("expected:", False, " actual:", testUltBoard.isValidMove(move), "\n")
+    print("expected:", False, " actual:", testUltBoard.isValidMove(move, prevMove), "\n")
 
-    print("test 4: invalid super_space") # this is wrong
+    print("test 4: invalid super_space") 
     move = (1, 3)
-    print("expected:", False, " actual:", testUltBoard.isValidMove(move), "\n")
+    print("expected:", False, " actual:", testUltBoard.isValidMove(move, prevMove), "\n")
 
     print("test 5: invalid sub_space")
     move = (5, 1)
-    print("expected:", False, " actual:", testUltBoard.isValidMove(move), "\n")
+    print("expected:", False, " actual:", testUltBoard.isValidMove(move, prevMove), "\n")
 
     print("test 6: valid move")
     move = (5, 6)
-    print("expected:", True, " actual:", testUltBoard.isValidMove(move), "\n")
+    print("expected:", True, " actual:", testUltBoard.isValidMove(move, prevMove), "\n")
