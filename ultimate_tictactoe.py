@@ -36,6 +36,9 @@ class player(object):
 class board(object):
     def __init__(self, valid_chips = ['X', 'O'], win_state = False,):
 
+        self.player1 = player('player 1', '')
+        self.player2 = player('player 2', '')
+
         self.valid_chips = valid_chips
         self.win_state = win_state
         self.row1 = ["1","2","3"]
@@ -114,6 +117,25 @@ class board(object):
             game_won = True
         
         return game_won
+    
+    def isFilled(self):
+        for i in self.rowlst:
+            for j in i:
+                if j in self.valid_chips:
+                    continue
+                else:
+                    return False
+        return True        
+        
+    def isDraw(self):
+        if self.checkGameWonGeneral():
+            return False
+        else:
+            if self.isFilled():
+                return True
+            else:
+                return False
+
     def boardChip(self, player):
         board_state = self.checkGameWon(player) #(bool, player)
         
@@ -164,6 +186,7 @@ class board(object):
 
 class ultimate_board(board):
     def __init__(self, valid_chips = ['X', 'O']):
+
         self.board1 = board()
         self.board2 = board()
         self.board3 = board()
@@ -308,23 +331,35 @@ class ultimate_board(board):
         
         #sub_space checks
         sub_board = self.selectSubBoard(move[0])
-        if sub_board in self.getWonBoardsGeneral():
+        if sub_board in self.getFilledBoardsGeneral(): 
             return False
         else:
             return sub_board.isValidMove(move[1])
         
-    def getWonBoardsGeneral(self):
+    def getFilledBoardsGeneral(self):
         '''
-        returns list of boards that are won by either player
+        returns list of boards that are won by either player or drawn
         '''
-        wonBoards = []
+        filledBoards = []
         for i in self.rowlst:
             for j in i:
-                if j.checkGameWonGeneral():
-                    wonBoards.append(j)
+                if j.checkGameWonGeneral() or j.isDraw():
+                    filledBoards.append(j)
 
-        return wonBoards
+        return filledBoards
 
+    def isDraw(self):
+        '''
+        returns True for draw, False for not
+        '''
+        filledBoardsGeneral = self.getFilledBoardsGeneral()
+        if len(filledBoardsGeneral) == 9:
+            if self.checkGameWon(self.player1) or self.checkGameWon(self.player2):
+                return False
+            else:
+                return True
+        else:
+            return False
     
     def __str__(self):
 
@@ -338,22 +373,21 @@ def play():
     move is a tuple (super_space, sub_space)
     player is a player object
     '''
-    player1 = player('player 1', '')
-    player2 = player('player 2', '')
-
+    
+    ultboard = ultimate_board()
     moveLog = []
 
-    if player1.getChip() == player2.getChip():
+    if ultboard.player1.getChip() == ultboard.player2.getChip():
         raise ValueError('players must choose different chips')
 
-    ultboard = ultimate_board()
+    
     
     prevChosen = False # indicates whether there is a restriction to which board you can play in
 
-    while (not player1.getWinState()) or (not player2.getWinState()):
+    while (not ultboard.player1.getWinState()) or (not ultboard.player2.getWinState()):
         #player 1 turn
         print("---------------------------------")
-        print(f"player 1 turn ({player1.getChip()})")
+        print(f"player 1 turn ({ultboard.player1.getChip()})")
         print("---------------------------------")
         validSuperSpace1 = False
         
@@ -362,7 +396,7 @@ def play():
                 try:
                     player1superchoice = int(input('choose super board space: '))
                     subboard = ultboard.selectSubBoard(player1superchoice)
-                    assert subboard.checkGameWon(player1)[0] == False
+                    assert subboard.checkGameWon(ultboard.player1)[0] == False
                     validSuperSpace1 = True
                 except ValueError:
                     print('invalid board space selected, try again')
@@ -383,7 +417,7 @@ def play():
             try:
                 prompt_str =  'choose sub board space: '
                 player1subchoice = int(input(prompt_str))
-                subboard.placeChip(player1.getChip(), player1subchoice)
+                subboard.placeChip(ultboard.player1.getChip(), player1subchoice)
                 validSuperSpace1 = True
             except ValueError:
                 print('invalid board space selected, try again')
@@ -395,21 +429,21 @@ def play():
         if moveLog == []: #accounts for fact that only on the first turn does someone get free choice
                            #of super space
             player1move = (player1superchoice, player1subchoice)
-            player1log = (player1.getChip(), player1move)
+            player1log = (ultboard.player1.getChip(), player1move)
             moveLog.append(player1log)
         
         else:
             player1move = (nextSuperBoard, player1subchoice)
-            player1log = (player1.getChip(), player1move, )
+            player1log = (ultboard.player1.getChip(), player1move, )
             moveLog.append(player1log)
         
 
         nextSuperBoard = player1subchoice
 
         print(ultboard)
-        if ultboard.checkGameWon(player1):
-            player1.updateWinState()
-            print(player1.getWinState())
+        if ultboard.checkGameWon(ultboard.player1):
+            ultboard.player1.updateWinState()
+            print(ultboard.player1.getWinState())
             print('player 1 won, exiting loop')
             return moveLog
             break
@@ -419,7 +453,7 @@ def play():
             return moveLog
         #player 2 turn
         print("---------------------------------")
-        print(f"player 2 turn ({player2.getChip()})")
+        print(f"player 2 turn ({ultboard.player2.getChip()})")
         print("---------------------------------")
         
         print("current superboard: ", nextSuperBoard)
@@ -432,7 +466,7 @@ def play():
             try:
                 prompt_str = 'choose sub board space: '
                 player2subchoice = int(input(prompt_str))
-                subboard.placeChip(player2.getChip(), player2subchoice)
+                subboard.placeChip(ultboard.player2.getChip(), player2subchoice)
                 validSuperSpace1 = True
             except ValueError:
                 print('invalid board space selected, try again')
@@ -442,18 +476,18 @@ def play():
                 break
         
         player2move = (nextSuperBoard, player2subchoice)
-        player2log = (player2.getChip(), player2move)
+        player2log = (ultboard.player2.getChip(), player2move)
         moveLog.append(player2log)
         
         nextSuperBoard = player2subchoice
         
         print(ultboard)
-        if ultboard.checkGameWon(player2):
-            player2.updateWinState()
-            print(player2.getWinState())
+        if ultboard.checkGameWon(ultboard.player2):
+            ultboard.player2.updateWinState()
+            print(ultboard.player2.getWinState())
             print('player 2 won, exiting loop')
             return moveLog
-            break
+            
 
 
 if __name__ == "__main__":
