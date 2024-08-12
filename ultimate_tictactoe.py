@@ -88,14 +88,39 @@ class board(object):
             player.updateWinState()
         
         return (game_won, player)
-
+    
+    def checkGameWonGeneral(self):
+        '''
+        True if board is won
+        False if not
+        does not depend on passing a player   
+        '''
+        game_won = False
+        if self.row1[0] == self.row1[1] == self.row1[2]:
+            game_won = True
+        elif self.row2[0] == self.row2[1] == self.row2[2]:
+            game_won = True
+        elif self.row3[0] == self.row2[1] == self.row2[2]:
+            game_won = True
+        elif self.row1[0] == self.row2[1] == self.row3[2]:
+            game_won = True
+        elif self.row1[2] == self.row2[1] == self.row3[0]:
+            game_won = True
+        elif self.row1[0] == self.row2[0] == self.row3[0]:
+            game_won = True
+        elif self.row1[1] == self.row2[1] == self.row3[1]:
+            game_won = True
+        elif self.row1[2] == self.row2[2] == self.row3[2]:
+            game_won = True
+        
+        return game_won
     def boardChip(self, player):
         board_state = self.checkGameWon(player) #(bool, player)
         
         if board_state[0]:
             return player.getChip()
 
-    def placeChip(self, player, loc):
+    def placeChip(self, player_chip, loc):
         '''
         input
         loc: int 1-9 to represent board location
@@ -104,7 +129,6 @@ class board(object):
         return
         None, mutates board
         '''
-        chip = player.getChip() #stores the chip that's to be placed
         
         if loc not in [1,2,3,4,5,6,7,8,9]:
             raise ValueError("not a valid board space")
@@ -116,8 +140,22 @@ class board(object):
             if self.rowlst[row_index_selected][row_space_selected] in self.valid_chips:
                 raise AssertionError("space taken: assumes space is vacant")
             
-            self.rowlst[row_index_selected][row_space_selected] = chip
+            self.rowlst[row_index_selected][row_space_selected] = player_chip
 
+    def isValidMove(self, loc):
+        '''
+        loc is int in 1-9 inclusive
+        '''
+        if loc not in range(1, 10):
+            return False
+        else:
+            row_index_selected = (loc - 1) // 3
+            row_space_selected = loc % 3 - 1
+            if self.rowlst[row_index_selected][row_space_selected] in self.valid_chips:
+                return False
+            
+            else:
+                return True
 
     
     def __str__(self):        
@@ -163,10 +201,10 @@ class ultimate_board(board):
 
         return sub_board_selected
     
-    def placeChip(self, player, loc, subloc):
+    def placeChip(self, player_chip, loc, subloc):
         '''
         input
-        player: player class
+        player_chip: player's chip string
         loc: super board loc
         subloc: sub board loc
 
@@ -183,7 +221,7 @@ class ultimate_board(board):
         super_row_space_selected = loc % 3 - 1
         sub_board_selected = self.rowlst[super_row_index_selected][super_row_space_selected] # this is a board object
 
-        sub_board_selected.placeChip(player, subloc)
+        sub_board_selected.placeChip(player_chip, subloc)
 
         
     def init_board_lst(self):
@@ -252,17 +290,49 @@ class ultimate_board(board):
 
         return wonBoardsSet in winConditions
     
+    def isValidMove(self, move):
+        '''
+        move is a tuple (super_space (int), sub_space (int))
+        '''
+        if (move[0] not in range(1,10)) or (move[1] not in range(1, 10)):
+            return False
+        
+        sub_board = self.selectSubBoard(move[0])
+        if sub_board in self.getWonBoardsGeneral() :
+            return False
+        else:
+            return sub_board.isValidMove(move[1])
+        
+    def getWonBoardsGeneral(self):
+        '''
+        returns list of boards that are won by either player
+        '''
+        wonBoards = []
+        for i in self.rowlst:
+            for j in i:
+                if j.checkGameWonGeneral():
+                    wonBoards.append(j)
+
+        return wonBoards
+
+    
     def __str__(self):
 
         return self.display_board()
     
 
 def play():
-    
+    '''
+    returns moveLog: list of moves made 
+    entries in list: (move, player_chip)
+    move is a tuple (super_space, sub_space)
+    player is a player object
+    '''
     player1 = player('player 1', '')
     player2 = player('player 2', '')
 
-    
+    moveLog = []
+
     if player1.getChip() == player2.getChip():
         raise ValueError('players must choose different chips')
 
@@ -296,14 +366,14 @@ def play():
             print("current superboard: ", nextSuperBoard)
             subboard = ultboard.selectSubBoard(nextSuperBoard)
             print(subboard)
-    
+
         validSubSpace1 = False
 
         while not validSubSpace1:
             try:
                 prompt_str =  'choose sub board space: '
                 player1subchoice = int(input(prompt_str))
-                subboard.placeChip(player1, player1subchoice)
+                subboard.placeChip(player1.getChip(), player1subchoice)
                 validSuperSpace1 = True
             except ValueError:
                 print('invalid board space selected, try again')
@@ -312,6 +382,18 @@ def play():
             else:
                 break     
         
+        if moveLog == []: #accounts for fact that only on the first turn does someone get free choice
+                           #of super space
+            player1move = (player1superchoice, player1subchoice)
+            player1log = (player1.getChip(), player1move)
+            moveLog.append(player1log)
+        
+        else:
+            player1move = (nextSuperBoard, player1subchoice)
+            player1log = (player1.getChip(), player1move, )
+            moveLog.append(player1log)
+        
+
         nextSuperBoard = player1subchoice
 
         print(ultboard)
@@ -319,8 +401,12 @@ def play():
             player1.updateWinState()
             print(player1.getWinState())
             print('player 1 won, exiting loop')
+            return moveLog
             break
-
+        
+        stopOption = input('stop game? (yes/else)')
+        if stopOption == 'yes':
+            return moveLog
         #player 2 turn
         print("---------------------------------")
         print(f"player 2 turn ({player2.getChip()})")
@@ -336,7 +422,7 @@ def play():
             try:
                 prompt_str = 'choose sub board space: '
                 player2subchoice = int(input(prompt_str))
-                subboard.placeChip(player2, player2subchoice)
+                subboard.placeChip(player2.getChip(), player2subchoice)
                 validSuperSpace1 = True
             except ValueError:
                 print('invalid board space selected, try again')
@@ -345,6 +431,10 @@ def play():
             else:
                 break
         
+        player2move = (nextSuperBoard, player2subchoice)
+        player2log = (player2.getChip(), player2move)
+        moveLog.append(player2log)
+        
         nextSuperBoard = player2subchoice
         
         print(ultboard)
@@ -352,8 +442,10 @@ def play():
             player2.updateWinState()
             print(player2.getWinState())
             print('player 2 won, exiting loop')
+            return moveLog
             break
 
 
 if __name__ == "__main__":
-    play()
+    moveLog = play()
+    print(moveLog)

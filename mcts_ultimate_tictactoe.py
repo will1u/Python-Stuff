@@ -33,11 +33,15 @@ class Node(object):
 # first does random, since you don't know anything about the state values yet
 
 class moveNode(Node):
-    def __init__(self, parent, meanValue, c, sims):
+    def __init__(self, move, parent, meanValue, c, sims):
         Node.__init__(self, parent)
+        self.move = move #tuple: (super_space (int), sub_space (int))
         self.meanValue = meanValue
         self.c = c
         self.sims = sims
+    
+    def getMove(self):
+        return self.move
     
     def getMeanValue(self):
         return self.meanValue
@@ -93,9 +97,25 @@ def findMoves(prev_move):
     return possible_moves
 
         
-#Expansion: look at next moves. parent is current state, children are next states
+#Expansion: create child node of possible move. iterate over all possible nodes parent is current state, children are next states
 
-def expansion(currNode):
+def validMoves(currNode, gameState):
+    '''
+    currNode is a moveNode object
+    gameState is a ultimate_board object
+
+    returns list of valid move tuples
+    '''
+    prevMove = currNode.getMove()
+    moveSet = findMoves(prevMove) #this is all possible moves given blank board
+
+    #vet possible moves
+    validMoves = []
+    for i in moveSet:
+        if gameState.isValidMove(i):
+            validMoves.append(i)
+    
+    return validMoves
 
 #Simulation: find the max UCB child. continue by making random choices until end state. win = 1, draw = 0, lose = -1
 #            go back to the parent, update the number of times the parent has been traversed
@@ -104,15 +124,36 @@ def expansion(currNode):
 #                 if the child node explores has a lot of wins, it contributes linearly to UCB (exploitation)
 
 
-
-
-
-
-
-
-
 if __name__ == "__main__":
-    test = moveNode(1, 2, 3, 4)
-    test.meanValue
+    testMoveHis = [('X', (1, 4)), ('O', (4, 7)), ('X', (7, 2)), ('O', (2, 7)), ('X', (7, 9)), ('O', (9, 7)), ('X', (7, 3)), ('O', (3, 7)), ('X', (7, 8)), ('O', (8, 5)), ('X', (5, 4)), ('O', (4, 4)), ('X', (4, 5)), ('O', (5, 1)), ('X', (1, 2)), ('O', (2, 3)), ('X', (3, 4)), ('O', (4, 6)), ('X', (6, 5))]
+    testUltBoard = ult.ultimate_board()
+    for i in testMoveHis:
+        chip = i[0]
+        super_space = i[1][0]
+        sub_space = i[1][1]
+        testUltBoard.placeChip(chip, super_space, sub_space)
     
+    print(testUltBoard)
+    print("test 1: out of bounds super_space")
+    move = (10, 1)
+    print("expected:", False, " actual:", testUltBoard.isValidMove(move), "\n")
+    
+    print("test 2: out of bounds sub_space")
+    move = (2, 11)
+    print("expected:", False, " actual:", testUltBoard.isValidMove(move), "\n")
 
+    print("test 3: out of bounds super_space and sub_space")
+    move = (12, 13)
+    print("expected:", False, " actual:", testUltBoard.isValidMove(move), "\n")
+
+    print("test 4: invalid super_space") # this is wrong
+    move = (1, 3)
+    print("expected:", False, " actual:", testUltBoard.isValidMove(move), "\n")
+
+    print("test 5: invalid sub_space")
+    move = (5, 1)
+    print("expected:", False, " actual:", testUltBoard.isValidMove(move), "\n")
+
+    print("test 6: valid move")
+    move = (5, 6)
+    print("expected:", True, " actual:", testUltBoard.isValidMove(move), "\n")
