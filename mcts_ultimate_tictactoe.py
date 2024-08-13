@@ -1,8 +1,10 @@
 #Monte Carlo Tree Search for Ult TicTacToe
+#https://ai-boson.github.io/mcts/
 
 import ultimate_tictactoe as ult
 import random
 import numpy as np
+import copy
 
 class Node(object):
     def __init__(self, parent):
@@ -12,7 +14,7 @@ class Node(object):
         self.parent = parent
         self.children = []
     
-    def addChildren(self, childNode):
+    def addChild(self, childNode):
         self.children.append(childNode)
 
     def getParent(self):
@@ -35,10 +37,11 @@ class Node(object):
 class moveNode(Node):
     def __init__(self, move, parent, meanValue, c, sims):
         Node.__init__(self, parent)
-        self.move = move #tuple: (super_space (int), sub_space (int))
+        self.move = move #tuple: (chip (str), (super_space (int), sub_space (int)))
         self.meanValue = meanValue
         self.c = c
         self.sims = sims
+        self.untried_actions = self.untried_actions()
     
     def getMove(self):
         return self.move
@@ -52,6 +55,9 @@ class moveNode(Node):
     def getSims(self):
         return self.sims
     
+    def untried_actions(self):
+        pass 
+        #gets all of the valid moves 
     def UCB(self, childNode):
         '''
         childNode is moveNode object
@@ -75,50 +81,97 @@ class moveNode(Node):
         return self.children[max_ucb_index]
     
 
-def findTotMoves():
-    
-    tot_move_set = []
-    for i in range(1, 10):
-        for j in range(1, 10):
-            tot_move_set.append((i, j))
+    def findTotMoves(self):
+        
+        tot_move_set = []
+        for i in range(1, 10):
+            for j in range(1, 10):
+                tot_move_set.append((i, j))
 
-    return tot_move_set
+        return tot_move_set
 
-def findMoves(prev_move):
-    '''
-    prev_move = (prev_super, prev_sub) (tuple)
-    prev_super: int representing previous super space played
-    prev_sub: int representing previous sub space played
-    '''
-    possible_moves = []
-    for i in range(1, 10):
-        possible_moves.append((prev_move[1], i))
-    
-    return possible_moves
+    def findMoves(self, prev_move):
+        '''
+        prev_move = (prev_super, prev_sub) (tuple)
+        prev_super: int representing previous super space played
+        prev_sub: int representing previous sub space played
+
+        returns (super_space, sub_space)
+        '''
+        possible_moves = []
+        for i in range(1, 10):
+            possible_moves.append((prev_move[1], i))
+        
+        return possible_moves
 
         
 #Expansion: create child node of possible move. iterate over all possible nodes parent is current state, children are next states
 
-def validMoves(currNode, gameState):
-    '''
-    currNode is a moveNode object
-    gameState is a ultimate_board object
+    def validMoves(self, gameState):
+        '''
+        currNode is a moveNode object
+        gameState is a ultimate_board object
+        
+        returns list of valid move tuples
+        '''
+        prevMove = self.getMove()
+        moveSet = self.findMoves(prevMove) #this is all possible moves given blank board
 
-    returns list of valid move tuples
-    '''
-    prevMove = currNode.getMove()
-    moveSet = findMoves(prevMove) #this is all possible moves given blank board
-
-    #vet possible moves
-    validMoves = []
-    for i in moveSet:
-        if gameState.isValidMove(i):
-            validMoves.append(i)
-    
-    return validMoves
+        #vet possible moves
+        validMoves = []
+        for i in moveSet:
+            if gameState.isValidMove(i, prevMove):
+                validMoves.append(i)
+        
+        return validMoves
 
 #Simulation: find the max UCB child. continue by making random choices until end state. win = 1, draw = 0, lose = -1
 #            go back to the parent, update the number of times the parent has been traversed
+
+def simulateGame(startNode, hero, villain, gameState):
+    
+    '''
+    performs random actions until game terminates
+
+    startNode: the last action made before simulateGame is called
+    hero: player object that refers to the player to move
+    villain: the other player
+    gameState: current board state before action made (ultimate_board object)
+
+    returns 1 for win, 0 for draw, -1 for loss
+    '''
+    gameClone = copy.deepcopy(gameState)
+    startNode.sims += 1
+    currNode = startNode
+    heroTurn = True
+    simulationPath = []
+    
+    while True:
+        if gameClone.checkGameWonGeneral():
+            if gameClone.checkGameWon(hero):
+                return 1
+            else:
+                return -1
+        elif gameClone.isDraw():
+            return 0
+        
+        if heroTurn:
+            validMoves = currNode.validMoves(currNode, gameClone)
+            randAction = random.choice(validMoves) #(super_space, sub_space)
+            
+            move = (hero.getChip(), randAction)
+            child = moveNode(move, currNode, 0, startNode.getC(), 0)
+            currNode.addChild(child)
+        
+        else:
+            validMoves = currNode.validMoves(currNode, gameClone)
+            randAction = random.choice(validMoves) #(super_space, sub_space)
+            
+            move = (villain.getChip(), randAction)
+            child = moveNode(move, currNode, 0, startNode.getC(), 0)
+            currNode.addChild(child)
+
+
 
 #Backpropagation: tally up the total score of all of the paths in the random sim. average to find v_i in Selection
 #                 if the child node explores has a lot of wins, it contributes linearly to UCB (exploitation)
@@ -133,9 +186,14 @@ if __name__ == "__main__":
         sub_space = i[1][1]
         testUltBoard.placeChip(chip, super_space, sub_space)
     
-
+    
     prevMove = testMoveHis[-1][1]
+    currNode = moveNode(prevMove, 1, 2, 3, 4)
+
     print(testUltBoard)
+    print("--------------------")
+    print("ult.isValidMoves() testing")
+    print("--------------------")
     print("test 1: out of bounds super_space")
     move = (10, 1)
     print("expected:", False, " actual:", testUltBoard.isValidMove(move, prevMove), "\n")
@@ -159,3 +217,10 @@ if __name__ == "__main__":
     print("test 6: valid move")
     move = (5, 6)
     print("expected:", True, " actual:", testUltBoard.isValidMove(move, prevMove), "\n")
+
+    print("--------------------")
+    print("validMoves() testing")
+    print("--------------------")
+    print("test 1: valid moves")
+    print(currNode.validMoves(currNode, testUltBoard))
+    

@@ -299,6 +299,8 @@ class ultimate_board(board):
         '''
         checks if the ultimate board 
         has been won by player
+
+        returns True if won, False if not
         '''
         wonBoardsList = self.getWonBoards(player)[0]
         wonBoardsSet = set(wonBoardsList)
