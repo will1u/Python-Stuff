@@ -36,8 +36,7 @@ class player(object):
 class board(object):
     def __init__(self, valid_chips = ['X', 'O'], win_state = False,):
 
-        self.player1 = player('player 1', '')
-        self.player2 = player('player 2', '')
+        
 
         self.valid_chips = valid_chips
         self.win_state = win_state
@@ -170,6 +169,8 @@ class board(object):
         '''
         if loc not in range(1, 10):
             return False
+        elif self.checkGameWonGeneral() or self.isDraw():
+            return False
         else:
             row_index_selected = (loc - 1) // 3
             row_space_selected = loc % 3 - 1
@@ -186,6 +187,9 @@ class board(object):
 
 class ultimate_board(board):
     def __init__(self, valid_chips = ['X', 'O']):
+        
+        self.player1 = player('player 1', '')
+        self.player2 = player('player 2', '')
 
         self.board1 = board()
         self.board2 = board()
@@ -329,15 +333,29 @@ class ultimate_board(board):
         elif prevMove == None:
             return True
         elif move[0] != prevMove[1]:
+            sub_board = self.selectSubBoard(prevMove[1])
+            if not(sub_board.checkGameWonGeneral() or sub_board.isDraw()):
+                return False
+            else:
+                '''
+                implement checking the move
+                '''
+                sub_board = self.selectSubBoard(move[0])
+                return sub_board.isValidMove(move[1])
+        elif move == prevMove:
             return False
         
         #sub_space checks
         sub_board = self.selectSubBoard(move[0])
-        if sub_board in self.getFilledBoardsGeneral(): 
-            return False
-        else:
-            return sub_board.isValidMove(move[1])
         
+        if not(sub_board.checkGameWonGeneral() or sub_board.isDraw()):
+            if sub_board in self.getFilledBoardsGeneral(): 
+                return False
+            else:
+                return sub_board.isValidMove(move[1])
+
+
+
     def getFilledBoardsGeneral(self):
         '''
         returns list of boards that are won by either player or drawn
